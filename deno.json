@@ -1,0 +1,10 @@
+{
+	"compilerOptions": {
+		"jsxFactory": "x",
+		"jsxFragmentFactory": "y",
+		"lib": [
+			"ESNext",
+			"dom"
+		]
+	}
+}
