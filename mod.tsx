@@ -11,7 +11,7 @@ declare global {
 }
 
 export type Props = Record<string, string | boolean> | null
-export type Children = [ HTMLElement | Promise<HTMLElement> | [ HTMLElement | Promise<HTMLElement> ] ] | undefined[]
+export type Children = [ HTMLElement | Promise<HTMLElement | undefined> | [ HTMLElement | Promise<HTMLElement | undefined> ] ] | undefined[]
 export function x<T extends HTMLElement>(typeOrFunc: string | ((props: Props, ...children: Children) => T), props: Props = null, ...children: Children) {
 	if (typeof typeOrFunc !== 'string')
 		return typeOrFunc(props, ...children)
@@ -27,6 +27,8 @@ export function x<T extends HTMLElement>(typeOrFunc: string | ((props: Props, ..
 		const divTag = <div /> as HTMLDivElement
 		parentTag.append(divTag)
 		childTag = await childTag
+		if (childTag == undefined)
+			return divTag.remove()
 		if (divTag.parentElement) {
 			divTag.parentElement.insertBefore(childTag, divTag)
 			divTag.remove()
