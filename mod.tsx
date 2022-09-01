@@ -11,7 +11,8 @@ declare global {
 }
 
 export type Props = Record<string, string | boolean> | null
-export type Children = [ HTMLElement | Promise<HTMLElement | undefined> | [ HTMLElement | Promise<HTMLElement | undefined> ] ] | undefined[]
+type Child = string | HTMLElement | undefined | Promise<string | HTMLElement | undefined>
+export type Children = [ Child | Child[] ]
 export function x<T extends HTMLElement>(typeOrFunc: string | ((props: Props, ...children: Children) => T), props: Props = null, ...children: Children) {
 	if (typeof typeOrFunc !== 'string')
 		return typeOrFunc(props, ...children)
@@ -19,20 +20,17 @@ export function x<T extends HTMLElement>(typeOrFunc: string | ((props: Props, ..
 	const parentTag = document.createElement(typeOrFunc) as T
 	if (props)
 		Object.entries(props).forEach(([ key, value ]) => typeof value === 'boolean' ? parentTag.toggleAttribute(key, value) : parentTag.setAttribute(key, value))
-	children.flat().forEach(async childTag => {
-		if (childTag == undefined)
+	children.flat().forEach(async child => {
+		if (child == undefined)
 			return
-		if (childTag.toString() !== '[object Promise]')
-			return parentTag.append(childTag as HTMLElement)
+		if (child.toString() !== '[object Promise]')
+			return parentTag.append(child as string | HTMLElement)
 		const divTag = <div /> as HTMLDivElement
 		parentTag.append(divTag)
-		childTag = await childTag
-		if (childTag == undefined)
-			return divTag.remove()
-		if (divTag.parentElement) {
-			divTag.parentElement.insertBefore(childTag, divTag)
-			divTag.remove()
-		}
+		child = await child
+		if (child != undefined && divTag.parentElement)
+			divTag.parentElement.insertBefore(typeof child === 'string' ? document.createTextNode(child) : child, divTag)
+		divTag.remove()
 	})
 	return parentTag
 }
