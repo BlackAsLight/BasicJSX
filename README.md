@@ -47,7 +47,7 @@ console.log((<App>
 </App>).outerHTML)
 ```
 
-Children is an array that is allowed to contain `HTMLElement | Promise<HTMLElement | undefined> | undefined`. It can also contain more arrays of these types. If passed a promise, a temp div will be inserted and replaced when the promise resolves. Any undefined results will be removed or ignored as not wanting to insert something.
+Children is an array that is allowed to contain `string | HTMLElement | undefined | Promise<string | HTMLElement | undefined>`. It can also contain more arrays of these types. If passed a promise, a temp div will be inserted and replaced when the promise resolves. Any undefined results will be removed or ignored as not wanting to insert something.
 
 ## Usage: Deno
 
