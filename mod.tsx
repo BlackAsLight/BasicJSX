@@ -10,7 +10,7 @@ declare global {
 	}
 }
 
-export type Props = Record<string, string | boolean> | null
+export type Props = Record<string, string> | null
 type Child = string | HTMLElement | undefined | Promise<string | HTMLElement | undefined>
 export type Children = [ Child | Child[] ]
 export function x<T extends HTMLElement>(typeOrFunc: string | ((props: Props, ...children: Children) => T), props: Props = null, ...children: Children) {
@@ -19,7 +19,7 @@ export function x<T extends HTMLElement>(typeOrFunc: string | ((props: Props, ..
 
 	const parentTag = document.createElement(typeOrFunc) as T
 	if (props)
-		Object.entries(props).forEach(([ key, value ]) => typeof value === 'boolean' ? parentTag.toggleAttribute(key, value) : parentTag.setAttribute(key, value))
+		Object.entries(props).forEach(([ key, value ]) => parentTag.setAttribute(key, value))
 	children.flat().forEach(async child => {
 		if (child == undefined)
 			return
