@@ -10,8 +10,9 @@ declare global {
 	}
 }
 
-export type Props = Record<string, string> | null
-type Child = string | HTMLElement | undefined | Promise<string | HTMLElement | undefined>
+type None = undefined | null
+export type Props = Record<string, string | None> | None
+type Child = string | HTMLElement | None | Promise<string | HTMLElement | None>
 export type Children = [ Child | Child[] ]
 export function x<T extends HTMLElement>(typeOrFunc: string | ((props: Props, ...children: Children) => T), props: Props = null, ...children: Children) {
 	if (typeof typeOrFunc !== 'string')
@@ -19,7 +20,10 @@ export function x<T extends HTMLElement>(typeOrFunc: string | ((props: Props, ..
 
 	const parentTag = document.createElement(typeOrFunc) as T
 	if (props)
-		Object.entries(props).forEach(([ key, value ]) => parentTag.setAttribute(key, value))
+		Object.entries(props).forEach(([ key, value ]) => {
+			if (value)
+				parentTag.setAttribute(key, value)
+		})
 	children.flat().forEach(async child => {
 		if (child == undefined)
 			return
