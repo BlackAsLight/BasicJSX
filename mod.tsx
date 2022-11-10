@@ -39,7 +39,7 @@ export function y(_props: Props, ...children: [ string | Tag ]): [ string | Tag 
 	return children
 }
 
-export function build(tag: Tag): HTMLElement {
+export function build<T extends HTMLElement>(tag: Tag): T {
 	const parentElement = createElement(tag)
 
 	if (tag.children) {
@@ -74,7 +74,7 @@ export function build(tag: Tag): HTMLElement {
 		} while (pos.length && element)
 	}
 
-	return parentElement
+	return parentElement as T
 }
 
 function createElement(tag: Tag): HTMLElement {

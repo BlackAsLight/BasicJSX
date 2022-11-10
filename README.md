@@ -22,7 +22,7 @@ Basic custom JSX functions so one can create HTML code without needing a react o
 ### main.tsx
 
 ```tsx
-import { build, Props, Tag, x } from 'https://deno.land/x/basic_jsx@v3.0.0/mod.tsx'
+import { build, Props, Tag, x } from 'https://deno.land/x/basic_jsx@v3.0.1/mod.tsx'
 
 console.log(build(<div>
   <h1>Hello</h1>
