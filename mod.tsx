@@ -1,8 +1,13 @@
 // deno-lint-ignore-file no-explicit-any
 declare global {
 	namespace JSX {
+		interface Element {
+			type: string,
+			props: Props,
+			children: [ string | Tag ]
+		}
 		interface IntrinsicElements {
-			[ elemName: string ]: any
+			[ elemName: string ]: Props
 		}
 		interface ElementClass {
 			render: any
@@ -11,34 +16,73 @@ declare global {
 }
 
 type None = undefined | null
-export type Props = Record<string, string | None> | None
-type Child = string | HTMLElement | None | Promise<string | HTMLElement | None>
-export type Children = [ Child | Child[] ]
-export function x<T extends HTMLElement>(typeOrFunc: string | ((props: Props, ...children: Children) => T), props: Props = null, ...children: Children) {
-	if (typeof typeOrFunc !== 'string')
-		return typeOrFunc(props, ...children)
+export type Props = Record<string, string> | None
+// export type Child = string | Tag
+export type Tag = {
+	type: string,
+	props: Props,
+	children: [ string | Tag ] | None
+}
+export type Component = (props: Props, ...tags: [string | Tag]) => Tag
 
-	const parentTag = document.createElement(typeOrFunc) as T
-	if (props)
-		Object.entries(props).forEach(([ key, value ]) => {
-			if (value)
-				parentTag.setAttribute(key, value)
-		})
-	children.flat().forEach(async child => {
-		if (child == undefined)
-			return
-		if (child.toString() !== '[object Promise]')
-			return parentTag.append(child as string | HTMLElement)
-		const divTag = <div /> as HTMLDivElement
-		parentTag.append(divTag)
-		child = await child
-		if (child != undefined && divTag.parentElement)
-			divTag.parentElement.insertBefore(typeof child === 'string' ? document.createTextNode(child) : child, divTag)
-		divTag.remove()
-	})
-	return parentTag
+export function x(typeOrComponent: string | Component, props: Props, ...children: [string | Tag]): Tag {
+	if (typeof typeOrComponent !== 'string')
+		return typeOrComponent(props, ...children)
+	return {
+		type: typeOrComponent,
+		props: props,
+		children: children.flat()
+	} as Tag
 }
 
-export function y(_props: Props, ...children: Children) {
+export function y(_props: Props, ...children: [ string | Tag ]): [ string | Tag ] {
 	return children
+}
+
+export function build(tag: Tag): HTMLElement {
+	const parentElement = createElement(tag)
+
+	if (tag.children) {
+		let element = parentElement
+		const pos = [ 0 ]
+		let children: [ string | Tag ]
+		do {
+			{
+				let tempTag = tag
+				for (let i = pos.length - 1; 0 < i; --i)
+					// We can be sure that children exist as we are traveling down a path we've previously been.
+					tempTag = (tempTag.children as Tag[])[ pos[ i ] ]
+				children = tempTag.children as [ string | Tag ]
+			}
+
+			while (pos[ 0 ] < children.length) {
+				// If child is a string, append it.
+				if (typeof children[ pos[ 0 ] ] === 'string')
+					element.append(children[ pos[ 0 ]++ ] as string)
+				else {
+					// Else move down a scope into the children.
+					element.append(createElement(children[ pos[ 0 ] ] as Tag))
+					element = element.lastChild as HTMLElement
+					children = (children[ pos[ 0 ] ] as Tag).children ?? ([] as any)
+					pos.unshift(0)
+				}
+			}
+			// Move up a scope as current scope has run out of children.
+			element = element.parentElement as HTMLElement
+			pos.shift()
+			++pos[ 0 ]
+		} while (pos.length && element)
+	}
+
+	return parentElement
+}
+
+function createElement(tag: Tag): HTMLElement {
+	const element = document.createElement(tag.type)
+	if (tag.props) {
+		const props = Object.entries(tag.props)
+		for (let i = 0; i < props.length; ++i)
+			element.setAttribute(props[ i ][ 0 ], props[ i ][ 1 ])
+	}
+	return element
 }

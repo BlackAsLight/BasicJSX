@@ -22,18 +22,18 @@ Basic custom JSX functions so one can create HTML code without needing a react o
 ### main.tsx
 
 ```tsx
-import {x, Props, Children} from https://deno.land/x/basic_jsx@v0.0.0/mod.tsx
+import { build, Props, Tag, x } from 'https://deno.land/x/basic_jsx@v3.0.0/mod.tsx'
 
-console.log((<div>
+console.log(build(<div>
   <h1>Hello</h1>
 </div>).outerHTML)
 
 // You'll need to accept and pass the props and children here if you plan to allow this component to accept those stuff in use. If you don't then any provided will be created and voided.
-function App(props: Props, ...children: Children) {
-	return <main { ...props }>{ children }</main>
+function App(props: Props, ...tags: Tag[]) {
+	return <main { ...props }>{ tags }</main>
 }
 
-console.log((<App class='potato'>
+console.log(build(<App class='potato'>
   <h1>Hello</h1>
 </App>).outerHTML)
 
@@ -42,12 +42,22 @@ function User(name: string) {
   return <h1>{name}</h1>
 }
 
-console.log((<App>
+console.log(build(<App>
   { User('BlackAsLight') }
 </App>).outerHTML)
 ```
 
-Children is an array that is allowed to contain `string | HTMLElement | undefined | null | Promise<string | HTMLElement | undefined | null>`. It can also contain more arrays of these types. If passed a promise, a temp div will be inserted and replaced when the promise resolves. Any undefined or null results will be removed or ignored as not wanting to insert something.
+The available types used in this module.
+```ts
+type None = undefined | null
+export type Props = Record<string, string> | None
+export type Tag = {
+	type: string,
+	props: Props,
+	children: [ string | Tag ] | None
+}
+export type Component = (props: Props, ...tags: [string | Tag]) => Tag
+```
 
 ## Usage: Deno
 
