@@ -63,7 +63,7 @@ export function build<T extends HTMLElement>(tag: Tag): T {
 					const e = document.createElement((children[ pos[ 0 ] ] as Tag).type)
 					// If the child isn't a valid HTML element, append it.
 					if (e.toString() === '[object HTMLUnknownElement]')
-						++pos[ 0 ]
+						element.append(children[ pos[ 0 ]++ ] as any)
 					else {
 						// Else move down a scope into the children.
 						element.append(e)
